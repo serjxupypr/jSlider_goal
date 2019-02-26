@@ -11,6 +11,8 @@ import jSlider from './modules/jSlider';
     $('.turbo-slider-1').jSlider({
       navigation: true,
       bullets: true,
+      slidesOnScreen: 2,
+      spaceBetween: 20,
     });
 
     $('.turbo-slider-2').jSlider();
