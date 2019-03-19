@@ -13,8 +13,19 @@ import jSlider from './modules/jSlider';
       bullets: true,
       slidesOnScreen: 2,
       spaceBetween: 20,
+      autoplay: true,
+      onSliderRisize: function() {
+        console.log('is resized');
+      },
+      onSlideChange: function() {
+        console.log('slide is changed');
+      }
+      
     });
 
-    $('.turbo-slider-2').jSlider();
+    $('.turbo-slider-2').jSlider({
+      navigation: true,
+      bullets: true,
+    });
   });
 })(jQuery);
