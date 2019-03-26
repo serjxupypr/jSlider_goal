@@ -14,13 +14,12 @@ import jSlider from './modules/jSlider';
       slidesOnScreen: 2,
       spaceBetween: 20,
       autoplay: true,
-      onSliderRisize: function() {
+      onSliderResize() {
         console.log('is resized');
       },
-      onSlideChange: function() {
+      onSlideChange() {
         console.log('slide is changed');
-      }
-      
+      },
     });
 
     $('.turbo-slider-2').jSlider({
