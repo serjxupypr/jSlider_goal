@@ -9,6 +9,18 @@
   },
   "extends": "airbnb-base",
   "rules": {
-    
+    "no-underscore-dangle": "off",
+    "no-console": "off",
+    "func-names": "off",
+    "no-trailing-spaces": "off",
+    "no-plusplus": "off",
+    "class-methods-use-this": "off",
+    "prefer-arrow-callback": "off",
+    "no-param-reassign": "off",
+    "max-len": "off",
+    "no-extra-semi": "off",
+    "wrap-iife": "off",
+    "no-shadow-restricted-names": "off",
+    "no-unused-vars": "off"
   }
 }
