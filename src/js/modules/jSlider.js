@@ -51,8 +51,8 @@
       this.$track.append(this.$slides);
       this.sliderContainer.append(this.$track);
       this._setTrackStyles();
-      if (this.options.navigation) this._appendButtons();
-      if (this.options.bullets) this._appendBullets();
+      if (this.options.navigation) this._setupButtons();
+      if (this.options.bullets) this._setupBullets();
       this._setTrackPosition(0);
       this._setSlidesStyles();
       this._setActiveSlide(0);
@@ -61,7 +61,7 @@
         this._autoPlay();
       }
 
-      this._addListeners($(window), 'resize', this._responsiveReset, this);
+      this._addListeners($(window), 'resize', this._responsiveRecalcSliderStyles, this);
       
       if (this.options.onsliderInit && typeof (this.options.onsliderInit) === 'function') this.options.onsliderInit();
     }
@@ -72,7 +72,7 @@
      * @private
      */
   
-    _appendButtons() {
+    _setupButtons() {
       // render 'next' and 'prev' control buttons
       this.sliderContainer.append(this.$buttonPrev).append(this.$buttonNext);
       
@@ -98,7 +98,7 @@
      * @private
      */
   
-    _appendBullets() {
+    _setupBullets() {
       // render control bullets
       this.bulletsHolder = $('<div class="j-bullets"></div>');
       this.bulletsList = $('<ul class="jslider-bullets"/>');
@@ -280,7 +280,7 @@
      * 
      * @private
      */
-    _responsiveReset(_this) {
+    _responsiveRecalcSliderStyles(_this) {
       // recalculate each slide width
       _this.slideWidth = Math.ceil(($(_this.sliderContainer).innerWidth() / _this.options.slidesOnScreen) - _this.options.spaceBetween / (_this.options.slidesOnScreen));
       _this.sliderTransitionValue = _this.slideWidth + _this.options.spaceBetween;
