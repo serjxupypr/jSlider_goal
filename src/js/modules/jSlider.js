@@ -4,7 +4,7 @@
  */
 
 ;(function ($, undefined) {
-  // Create the defaults, only once!
+  // Creates the defaults, only once!
   const defaults = {
     autoplay: false,
     playDelay: 3000,
@@ -17,6 +17,8 @@
     onSlideChange: '',
     onsliderInit: '',
     onSliderResize: '',
+    slideSpeed: 500,
+    easing: 'ease-out',
   };
 
   // The actual plugin constructor
@@ -31,15 +33,25 @@
     constructor(element, options) {
       this.sliderContainer = $(element);
       this.options = $.extend({}, defaults, options);
+
       this.$track = $('<div class="jslider-track"/>');
       this.$slides = $('> *', this.sliderContainer).detach();
-      this.currentSlideIndex = 0;
+
       this.$buttonNext = $(this.options.nextButton);
       this.$buttonPrev = $(this.options.prevButton);
+
+      this.currentSlideIndex = 0;
+      this.START_SLIDE_INDEX = 0;
+      this.RESTORE_AUTOPLAY_DELAY = 200;
+
       this.slideWidth = Math.ceil(($(this.sliderContainer).innerWidth() / this.options.slidesOnScreen) - this.options.spaceBetween / (this.options.slidesOnScreen));
       this.sliderTransitionValue = this.slideWidth + this.options.spaceBetween;
+
       this.ACTIVE_SLIDE_CLASS = 'active-slide';
-      this.autoPlayTimer = '';
+      this.ACTIVE_BULLET_CLASS = 'active';
+
+      this.autoPlayTimer = null;
+ 
       this.init();
     }
 
@@ -51,15 +63,15 @@
       this.$track.append(this.$slides);
       this.sliderContainer.append(this.$track);
       this._setTrackStyles();
+
       if (this.options.navigation) this._setupButtons();
       if (this.options.bullets) this._setupBullets();
-      this._setTrackPosition(0);
+      
+      this._setTrackPosition(this.START_SLIDE_INDEX);
       this._setSlidesStyles();
-      this._setActiveSlide(0);
+      this._setActiveSlide(this.START_SLIDE_INDEX);
 
-      if (this.options.autoplay) {
-        this._autoPlay();
-      }
+      if (this.options.autoplay) this._autoPlay();
 
       this._addListeners($(window), 'resize', this._responsiveRecalcSliderStyles, this);
       
@@ -67,39 +79,35 @@
     }
 
     /**
-     * render and add event listeners to controlls buttons
+     * renders and adds event listeners to controlls buttons
      * 
      * @private
      */
   
     _setupButtons() {
-      // render 'next' and 'prev' control buttons
+      // renders 'next' and 'prev' control buttons
       this.sliderContainer.append(this.$buttonPrev).append(this.$buttonNext);
       
-      // add event listeners to control buttons
+      // adds event listeners to control buttons
       this.$buttonPrev.click(() => {
-        this._prevSlide(this);
-        if (this.options.autoplay) {
-          this._autoPlay();
-        }
+        this._showPrevSlide(this);
+        if (this.options.autoplay) this._autoPlay();
       });
 
       this.$buttonNext.click(() => {
-        this._nextSlide(this);
-        if (this.options.autoplay) {
-          this._autoPlay();
-        }
+        this._showNextSlide(this);
+        if (this.options.autoplay) this._autoPlay();
       });
     }
 
     /**
-     * render and add event listeners to control bullets
+     * renders and adds event listeners to control bullets
      * 
      * @private
      */
   
     _setupBullets() {
-      // render control bullets
+      // renders control bullets
       this.bulletsHolder = $('<div class="j-bullets"></div>');
       this.bulletsList = $('<ul class="jslider-bullets"/>');
       this.sliderContainer.append(this.bulletsHolder);
@@ -111,14 +119,11 @@
       this.bullets = this.bulletsList.find('.j-bullet');
       this.bulletsHolder.append(this.bulletsList);
 
-      // add listeners for control bullets
+      // adds listeners for control bullets
       this.bullets.on('click', (e) => {
         this._setActiveSlide($(e.currentTarget).index());
         this._setActiveBulletSlide($(e.currentTarget).index());
-
-        if (this.options.autoplay) {
-          this._autoPlay();
-        }
+        if (this.options.autoplay) this._autoPlay();
       });
     }
 
@@ -133,7 +138,7 @@
       this.sliderContainer.css({ overflow: 'hidden' });
       this.$track.outerWidth(width).css({
         display: 'flex',
-        transition: 'transform .5s ease-out',
+        transition: `transform ${this.options.slideSpeed / 1000}s ${this.options.easing}`,
       });
     }
 
@@ -162,10 +167,10 @@
      * @private
      */
     
-    _nextSlide(_this) {
+    _showNextSlide(_this) {
       /*
-       * check current slider position (is it first slide)
-       * and setup active slide 
+       * checking current slider position (is it first slide)
+       * and setting up active slide 
        */ 
       if (!(_this.currentSlideIndex + 1 > _this.$slides.length - 1)) {
         _this.currentSlideIndex += 1;
@@ -173,11 +178,11 @@
         _this._setTrackPosition(-currentPos);
         _this._setActiveSlide(_this.currentSlideIndex);
       } else {
-        _this._setTrackPosition(0);
-        _this._setActiveSlide(0);
+        _this._setTrackPosition(this.START_SLIDE_INDEX);
+        _this._setActiveSlide(this.START_SLIDE_INDEX);
       }
 
-      // check existence of slide-change callback
+      // checking existence of slide-change callback
       if (_this.options.onSlideChange && typeof (_this.options.onSlideChange) === 'function') _this.options.onSlideChange();
     }
 
@@ -188,12 +193,12 @@
      * 
      * @private
      */
-    _prevSlide(_this) {
+    _showPrevSlide(_this) {
       let currentPos;
 
       /*
-       * check current slider position (is it last slide)
-       * and setup active slide 
+       * checking current slider position (is it last slide)
+       * and setting up active slide
        */
       if (_this.currentSlideIndex - 1 < 0) {
         _this.currentSlideIndex = _this.$slides.length - 1;
@@ -205,12 +210,12 @@
       _this._setTrackPosition(-currentPos);
       _this._setActiveSlide(_this.currentSlideIndex);
 
-      // check existence of slide-change callback
+      // checking existence of slide-change callback
       if (typeof (_this.options.onSlideChange) === 'function') _this.options.onSlideChange();
     }
 
     /**
-     * show 'n' slide of slider
+     * show 'n-th' slide of slider
      * 
      * @param {number} - index of slide, that should be shown
      * 
@@ -236,19 +241,19 @@
       // remove 'active' class name for all slides
       this.$slides.removeClass(this.ACTIVE_SLIDE_CLASS);
 
-      // set class name for current slide
+      // setting class name for current slide
       this.currentSlide = this.$slides.eq(slideindex);
       this.currentSlide.addClass(this.ACTIVE_SLIDE_CLASS);
 
-      // set class name for bullet of current slide
+      // setting class name for bullet of current slide
       if (this.bullets.length) {
-        this.bullets.removeClass('active');
-        this.bullets.eq(slideindex).addClass('active');
+        this.bullets.removeClass(this.ACTIVE_BULLET_CLASS);
+        this.bullets.eq(slideindex).addClass(this.ACTIVE_BULLET_CLASS);
       }
     }
 
     /**
-     * set slider track position to make visible active slide
+     * setting up slider track position to make visible active slide
      * 
      * @param {number} - position of slider track (css pixels)
      * 
@@ -256,12 +261,12 @@
      */
     _setTrackPosition(trackPosition) {
       this.$track.css({
-        transform: `translate3d( ${trackPosition}px , 0, 0)`,
+        transform: `translate3d(${trackPosition}px , 0, 0)`,
       });
     }
 
     /**
-     * set start slides styles (width and indent between each slide)
+     * setting up start slides styles (width and indent between each slide)
      * 
      * @private
      */
@@ -272,9 +277,8 @@
       });
     }
 
-
     /**
-     * recalculate slider styles on window size change
+     * recalculating slider styles on window size changing
      * 
      * @param {object} - this, object with all necessary data
      * 
@@ -290,7 +294,7 @@
       });
 
       let timer;
-      // recalculate slider track width (depends on slides quantity and slides width)
+      // recalculating slider track width (depends on slides quantity and slides width)
       const width = _this.sliderTransitionValue * _this.$slides.length;
 
       // turn off transition for 'resize time'
@@ -306,16 +310,16 @@
       // turn on transition after 'resize time'
       timer = setTimeout(function () {
         _this.$track.css({
-          transition: 'transform .5s ease-out',
-        }, 200);
+          transition: `transform ${_this.options.slideSpeed / 1000}s ${_this.options.easing}`,
+        }, _this.RESTORE_AUTOPLAY_DELAY);
       });
 
-      // check existence of window resize callback
+      // checking existence of window resize callback
       if (_this.options.onSliderResize && typeof (_this.options.onSliderResize) === 'function') _this.options.onSliderResize();
     }
 
     /**
-     * set slider autoplay
+     * setting up slider autoplay
      * 
      * @private
      */
@@ -324,20 +328,26 @@
       // clear interval function for prevent stack next-slide call
       clearInterval(this.autoPlayTimer);
       
-      // set interval function for next slide
+      // setting up interval function for next slide
       this.autoPlayTimer = setInterval(() => {
         if (!(this.currentSlideIndex + 1 > this.$slides.length - 1)) {
-          this._nextSlide(this);
+          this._showNextSlide(this);
         } else {
-          this._setTrackPosition(0);
-          this._setActiveSlide(0);
+          this._setTrackPosition(this.START_SLIDE_INDEX);
+          this._setActiveSlide(this.START_SLIDE_INDEX);
         }
-      }, this.options.playDelay);
+      }, this.options.playDelay + this.options.slideSpeed);
     }
   }
 
-  // A really lightweight plugin wrapper around the constructor, 
-  // preventing against multiple instantiations
+  /**
+   * Plugin wrapper around the constructor,
+   * preventing against multiple instantiations.
+   * Saves instance of Plugin in jQuery data
+   *
+   * @param {Object} options - user defined options
+   * @returns {*}
+   */
   $.fn.jSlider = function (options) {
     return this.each(function () {
       if (!$.data(this, 'GoalSlider')) {

@@ -13,6 +13,7 @@ import jSlider from './modules/jSlider';
       bullets: true,
       slidesOnScreen: 2,
       spaceBetween: 20,
+      slideSpeed: 800,
       autoplay: true,
       onSliderResize() {
         console.log('is resized');
