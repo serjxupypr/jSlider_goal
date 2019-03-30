@@ -25,7 +25,7 @@ import jSlider from './modules/jSlider';
 
     $('.turbo-slider-2').jSlider({
       navigation: true,
-      bullets: true,
+      bullets: false,
     });
   });
 })(jQuery);

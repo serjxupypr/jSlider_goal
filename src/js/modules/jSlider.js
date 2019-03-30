@@ -246,7 +246,7 @@
       this.currentSlide.addClass(this.ACTIVE_SLIDE_CLASS);
 
       // setting class name for bullet of current slide
-      if (this.bullets.length) {
+      if (this.options.bullets) {
         this.bullets.removeClass(this.ACTIVE_BULLET_CLASS);
         this.bullets.eq(slideindex).addClass(this.ACTIVE_BULLET_CLASS);
       }

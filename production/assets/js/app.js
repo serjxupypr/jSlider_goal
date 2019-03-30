@@ -27,7 +27,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
     $('.turbo-slider-2').jSlider({
       navigation: true,
-      bullets: true
+      bullets: false
     });
   });
 })(jQuery); // You can write a call and import your functions in this file.
@@ -320,7 +320,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         this.currentSlide.addClass(this.ACTIVE_SLIDE_CLASS);
 
         // setting class name for bullet of current slide
-        if (this.bullets.length) {
+        if (this.options.bullets) {
           this.bullets.removeClass(this.ACTIVE_BULLET_CLASS);
           this.bullets.eq(slideindex).addClass(this.ACTIVE_BULLET_CLASS);
         }
